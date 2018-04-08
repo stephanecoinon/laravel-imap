@@ -14,6 +14,7 @@ namespace Webklex\IMAP;
 
 use Webklex\IMAP\Exceptions\GetMessagesFailedException;
 use Webklex\IMAP\Exceptions\MessageSearchValidationException;
+use Webklex\IMAP\Search;
 use Webklex\IMAP\Support\FolderCollection;
 use Webklex\IMAP\Support\MessageCollection;
 
@@ -199,6 +200,27 @@ class Folder {
      */
     public function getUnseenMessages($criteria = 'UNSEEN', $fetch_options = null, $fetch_body = true, $fetch_attachment = true) {
         return $this->getMessages($criteria, $fetch_options, $fetch_body, $fetch_attachment);
+    }
+
+    /**
+     * Return a new Search query instance in this folder.
+     * 
+     * Usage:
+     *     $folder->search(function ($search) {
+     *         $search->to('john@example.com')
+     *             ->since(Carbon::parse('1 month ago'));
+     *     });
+     * 
+     *     $folder->search()
+     *         ->to('john@example.com')
+     *         ->since(Carbon::parse('1 month ago'))
+     *         ->get();
+     *
+     * @return \Webklex\IMAP\Search
+     */
+    public function search()
+    {
+        return new Search($this);
     }
 
     /**

@@ -2,3 +2,5 @@ vendor
 composer.lock
 .idea
 test.php
+phpunit.xml
+build/

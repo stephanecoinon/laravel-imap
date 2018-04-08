@@ -27,6 +27,11 @@
             "Webklex\\IMAP\\": "src/IMAP"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
     "scripts": {
         "test": "phpunit"
     },
