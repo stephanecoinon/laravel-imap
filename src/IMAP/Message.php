@@ -155,8 +155,8 @@ class Message {
         
         $this->msglist = $msglist;
         $this->client = $client;
-        $this->uid = ($this->fetch_options == FT_UID) ? $uid : imap_msgno($this->client->getConnection(), $uid);
-        
+        $this->uid = ($this->fetch_options & FT_UID) ? $uid : imap_msgno($this->client->getConnection(), $uid);
+
         $this->parseHeader();
 
         if ($this->getFetchBodyOption() === true) {
@@ -249,7 +249,14 @@ class Message {
      * @return void
      */
     private function parseHeader() {
-        $this->header = $header = imap_fetchheader($this->client->getConnection(), $this->uid, $this->fetch_options);
+        $this->header = $header = imap_fetchheader(
+            $this->client->getConnection(),
+            $this->uid,
+            // We only support FT_UID option as $this->fetch_options is a bitmask
+            // also used for imap_fetchbody() which doesn't take FT_INTERNAL
+            // or FT_PREFETCHTEXT
+            $this->fetch_options & FT_UID
+        );
         if ($this->header) {
             $header = imap_rfc822_parse_headers($this->header);
         }
@@ -319,8 +326,8 @@ class Message {
             $this->message_id = str_replace(['<', '>'], '', $header->message_id);
         }
         if (property_exists($header, 'Msgno')) {
-            $messageNo = (int) trim($header->Msgno);
-            $this->message_no = ($this->fetch_options == FT_UID) ? $messageNo : imap_msgno($this->client->getConnection(), $messageNo);
+            $messageNo = (int)trim($header->Msgno);
+            $this->message_no = ($this->fetch_options & FT_UID) ? $messageNo : imap_msgno($this->client->getConnection(), $messageNo);
         } else {
             $this->message_no = imap_msgno($this->client->getConnection(), $this->getUid());
         }
@@ -380,7 +387,13 @@ class Message {
      * @return $this
      */
     public function parseBody() {
-        $structure = imap_fetchstructure($this->client->getConnection(), $this->uid, $this->fetch_options);
+        $structure = imap_fetchstructure(
+            $this->client->getConnection(),
+            $this->uid,
+            // The only option for imap_fetchstructure() is FT_UID
+            // which we're extracting here from fetch_options bitmask
+            $this->fetch_options & FT_UID
+        );
 
         $this->fetchStructure($structure);
 
@@ -481,7 +494,7 @@ class Message {
             $this->fetch_options = $option;
         } elseif (is_null($option) === true) {
             $config = config('imap.options.fetch', FT_UID);
-            $this->fetch_options = is_long($config) ? $config : 1;
+            $this->fetch_options = is_long($config) ? $config : FT_UID;
         }
 
         return $this;
@@ -608,7 +621,13 @@ class Message {
      * @return bool
      */
     public function delete() {
-        $status = imap_delete($this->client->getConnection(), $this->uid, $this->fetch_options);
+        $status = imap_delete(
+            $this->client->getConnection(),
+            $this->uid,
+            // The only option for imap_delete() is FT_UID
+            // which we're extracting here from fetch_options bitmask
+            $this->fetch_options & FT_UID
+        );
         $this->client->expunge();
 
         return $status;

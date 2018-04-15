@@ -72,9 +72,10 @@ return [
     |   -Delimiter (optional):
     |       This option is only used when calling $oClient->
     |       You can use any supported char such as ".", "/", (...)
-    |   -Fetch option:
-    |       FT_UID  - Message marked as read by fetching the message
+    |   -Fetch option (bitmask):
+    |       FT_UID  - Fetch messages by UID
     |       FT_PEEK - Fetch the message without setting the "read" flag
+    |       example: FT_UID | FT_PEEK will fetch messages by UID and won't mark them as read
     |   -Body download option
     |       Default TRUE
     |   -Attachment download option
